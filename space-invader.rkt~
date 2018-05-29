@@ -1,6 +1,6 @@
 ;; The first three lines of this file were inserted by DrRacket. They record metadata
 ;; about the language level of this file in a form that our tools can easily process.
-#reader(lib "htdp-beginner-abbr-reader.ss" "lang")((modname space-invader) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+#reader(lib "htdp-beginner-abbr-reader.ss" "lang")((modname space-invaderv3) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
 (require 2htdp/universe)
 (require 2htdp/image)
 
@@ -167,7 +167,6 @@
   (big-bang g 
     (on-key handle-key)
     (on-tick advance-game)
-    (stop-when reached-bottom?)
     (to-draw render-game)))
 
 
@@ -414,31 +413,6 @@
          (make-tank WIDTH 0)]
         [else 
   (make-tank (+ (tank-x t) (* TANK-SPEED (tank-dir t))) (tank-dir t))]))
-
-
-
-
-
-
-
-
-
-
-(define (reached-bottom? g)
-  (reached-bottom-invader? (game-invaders g)))
-
-(define (reached-bottom-invader? loi)
-  (cond [(empty? loi) false]
-        [else
-         (or (> (invader-y (first loi)) (- HEIGHT 3))
-              (reached-bottom-invader? (rest loi)))]))
-
-
-
-
-
-
-
 
      
 
