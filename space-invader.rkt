@@ -90,6 +90,7 @@
 (define LOI0 empty)
 (define LOI1 (cons I1 empty))
 (define LOI2 (cons I2 LOI1))
+(define LOI3 (list I4 I1 I2)) 
 
 #;
 (define (fn-for-loinvader loi)
@@ -108,7 +109,8 @@
 
 (define M1 (make-missile 150 300))                      
 (define M2 (make-missile 150 98))  
-(define M3 (make-missile 180 345)) 
+(define M3 (make-missile 180 345))
+(define M4 (make-missile 245 8)) 
 
 #;
 (define (fn-for-missile m)
@@ -148,6 +150,7 @@
 (define G1 (make-game empty empty T1))
 (define G2 (make-game (list I1) (list M1) T2))
 (define G3 (make-game (list I1 I2) (list M1 M2) T3))  ; I1 & M2 will collide
+(define G4 (make-game (list I4 I1 I2) (list M1 M2) T3))
 
 #;
 (define (fn-for-game s)
@@ -167,7 +170,7 @@
 (define (main g )
   (big-bang g                      ; Game
     (on-key handle-key-game)       ; Game KeyEvent -> Game
-    (on-tick next-game)         ; Game -> Game
+    (on-tick next-game)            ; Game -> Game
     (to-draw render-game)          ; Game -> Image
     (stop-when reached-bottom?)))  ; Game ->  Boolean
 
@@ -274,7 +277,8 @@
 ;; Game -> Boolean
 ;; produce true if there is no collision happend inbetween Invader & Missile, false otherwise
 
-;;<INCLUDE CHECKEXPECT>
+(check-expect (no-collision? G2) true) 
+(check-expect (no-collision? G3) false ) 
 
 ; (define (no-collision g) true) ;stub
 
@@ -287,6 +291,11 @@
 
 ;; ListOfMissile ListOfMissile -> Boolean
 ;; produce true if both lists are same, false otherwise
+;; first list is original list, second one is after search list
+
+(check-expect (same? LOI1 LOI1) true) ;
+(check-expect (same? LOI1 LOI2) true) ; LOI1 is the suffix of LOI2
+(check-expect (same? LOI1 empty) false) 
 
 ;(define (same? lom1 lom2) false) ;stub
 
@@ -303,7 +312,8 @@
 ;; Search if the Invader has collided with any other Missile in ListOfMissile
 ;; Delete the Missile from the ListOfMissile if it does, do nothing otherwise
 
-;; <INCLUDE CHECKEXPECT >
+(check-expect (search-collision I1 LOM1) LOM1)
+(check-expect (search-collision I1 LOM2) LOM1) ;I1 & M2 is close
 
 ; (define (search-collision i lom) LOM1)
 
@@ -319,7 +329,8 @@
 ;; Invader Missile -> Boolean
 ;; produce true if the Missile is close enough to hit the Invader, false otherwise
 
-;;<INLCUDE CEHCKEWXPEW>
+(check-expect (close? I1 M1) false)
+(check-expect (close? I1 M2) true) 
 
 ; (define (close? i m) true) ;stub
 
@@ -332,8 +343,6 @@
 
 ;; Invader Game -> Game
 ;; the Invader into the ListOfInvaders inside the Game
-
-;;<INCLUDE CHECKEXPECT >
 
 ; (define (add-invader i g) G1) ;stub
 
@@ -348,12 +357,13 @@
 ;; Game -> Game
 ;; process the input for "filter-game" function
 
-;; <INCLUDE CHECKEXPECT >
+(check-expect (filter-game-input G3) (make-game (rest (game-invaders G3))
+                                                (list M1) T3))
 
 ; (define (filter-game-input g) G1)
 
 (define (filter-game-input g)
-  (make-game (rest (game-invaders g))
+  (make-game (rest (game-invaders g))                      ; calling search-collision for deleting 
              (search-collision (first (game-invaders g))
                                (game-missiles g))
              (game-tank g)))
@@ -363,10 +373,12 @@
 ;; Game -> Game
 ;; Advance everything in the screen to their respective direction,advance the whole game
 
-(check-random (advance-game G0) (make-game (cons (make-invader (random WIDTH) -1.5 1) empty) empty (make-tank 150 0)))
-(check-random (advance-game G1) (make-game (cons  (make-invader 151.5 101.5 1) empty)
-                                        (cons (make-missile 150 290) empty)
-                                        (make-tank 52 1)))
+(check-expect (advance-game G0) G0)
+(check-expect (advance-game G1) (make-game empty empty (advance-tank T1)))
+(check-expect (advance-game G3) (make-game
+                                 (advance-invaders (list I1 I2))
+                                 (advance-missiles (list M1 M2))
+                                 (advance-tank T3)))
 
 ; (define (advance-game g) G1) ;stub
 
@@ -399,7 +411,7 @@
 ;; also check if they will hit left or right border of the screen
 
 (check-expect (advance-invader I1) (make-invader 151.5 101.5 1))
-(check-expect (advance-invader I2) (make-invader WIDTH 151.5 -1))
+(check-expect (advance-invader I2) (make-invader WIDTH 151.5 -1)) ;hit right and rebound
 
 ; (define (advance-invader i) I2) ;stub
 
@@ -420,7 +432,8 @@
 ;; Invader -> Boolean
 ;; produce true if the Invader will hit the right border of the screen
 
-;; <CHECK EXPECT>
+(check-expect (hitting-right? I1) false)
+(check-expect (hitting-right? I2) true) 
 
 ; (define (hitting-right? i) true) ;stub
 
@@ -432,7 +445,8 @@
 ;; Invader -> Boolean
 ;; produce true if the Invader will hit the left border of the screen
 
-;; <CHECK EXPECT>
+(check-expect (hitting-left? I1) false)
+(check-expect (hitting-left? I3) true) 
 
 ; (define (hitting-left? i) true) ;stub
 
@@ -447,7 +461,7 @@
 
 (check-expect (advance-missiles LOM0) empty)
 (check-expect (advance-missiles LOM1) (cons (make-missile 150 290) empty))
-(check-expect (advance-missiles LOM2) (cons (make-missile 15 49) (cons (make-missile 150 290) empty)))
+(check-expect (advance-missiles LOM2) (cons (make-missile 150 88) (cons (make-missile 150 290) empty)))
 
 ; (define (advance-missiles lom) LOM2) ;stub
 
@@ -464,7 +478,8 @@
 ;; Missile -> Boolean
 ;; produce true if the Missile is going to be out of the screen, false otherwise
 
-;; <INCLUDE CHECKEXPECT>
+(check-expect (out-of-screen? M1) false)
+(check-expect(out-of-screen? M4) true)
 
 ; (define (out-of-screen? m) true) ;stub
 
@@ -476,8 +491,6 @@
 ;; Missile -> Missile
 ;; Advance the missile upward from its current position
 
-;; <INCLUDE CHECKEXPECT>
-
 ; (define (advance-missile m) M1) ;stub
 
 (define (advance-missile m)
@@ -488,8 +501,9 @@
 ;; Tank -> Tank
 ;; Advance the tank in its respective direction (Left/Right)
 
-(check-expect (advance-tank T0) (make-tank (+ (tank-x T0) (* TANK-SPEED (tank-dir T0))) (tank-dir T0)))
-(check-expect (advance-tank T1) (make-tank 52 1)) 
+(check-expect (advance-tank T0) T0)
+(check-expect (advance-tank T1) (make-tank 152 1))
+(check-expect (advance-tank T3) (make-tank 0 0))
 
 ; (define (advance-tank t) T1) ; stub
 
@@ -508,7 +522,8 @@
 ;; Tank -> Boolean
 ;; produce true if the tank is about to get out of the screen through left side
 
-;; <CHECK EXPCET >
+(check-expect (toomuch-left? T3) true)
+(check-expect (toomuch-left? T1) false)
 
 ; (define (toomuch-left? t) true) ;stub
 
@@ -520,7 +535,7 @@
 ;; Tank -> Boolean
 ;; produce true if the tank is about to get out of the screen through right side
 
-;; <CHECK EXPCET >
+;; redundant 
 
 ; (define (toomuch-right? t) true) ;stub
 
@@ -535,7 +550,8 @@
 ;; Game -> Boolean
 ;; check if any Invader touch the bottom border of the screen
 
-;; <INCLUDE CHECKEXPECT
+(check-expect (reached-bottom? G1) false)
+(check-expect (reached-bottom? G4) true)
 
 ; (define (reached-bottom? g) true) ;stub
 
@@ -547,7 +563,8 @@
 ;; ListOfInvader -> Boolean
 ;; produce true if an Invader from ListOfInvader touch the bottom border of the screen, false otherwise
 
-;; <INCLUDE CHECKEXPECT
+(check-expect (invader-reached-bottom? LOI2) false)
+(check-expect (invader-reached-bottom? LOI3) true)
 
 ; (define (reached-bottom? g) true) ;stub
 
@@ -557,7 +574,7 @@
          (or (> (invader-y (first loi)) (- HEIGHT 3))
              (invader-reached-bottom? (rest loi)))]))
 
-
+;; ============RANDOMIZE FUNCTION============
 
 
 ;;Game -> Game
@@ -575,9 +592,10 @@
 ;; ListOfInvader -> ListOfInvader
 ;; create a new Invader in randomize way
 
-;(check-random (create-invader LOI0) (cons (make-invader (random WIDTH) -3 1) LOI0))
-;(check-random (create-invader LOI1) (cons (make-invader (random WIDTH) -3 1) LOI1))
-;(check-random (create-invader LOI2) (cons (make-invader (random WIDTH) -3 1) LOI2))
+(check-random (create-invader LOI0) (cons (make-invader (random WIDTH) -3 1) LOI0))
+(check-random (create-invader LOI1) (if (< (random INVADE-RATE) 3)
+                                         (cons (make-invader (random WIDTH) -3 1) LOI1)
+                                          LOI1))
 
 ; (define (create-invader loi) LOI1) ;stub
 
@@ -589,6 +607,8 @@
              (cons (make-invader (random WIDTH) -3 1)
                    loi)
              loi)]))
+
+
 ;; ===================TO-DRAW=========================
 
      
@@ -597,8 +617,9 @@
 ;; produce the rendered image of the current instance of the Game
 
 (check-expect (render-game G0) (place-image TANK (tank-x T0) (- HEIGHT TANK-HEIGHT/2) BACKGROUND))
-(check-expect (render-game G1) (place-image TANK 50 (- 500 TANK-HEIGHT/2)
-                                            (place-image INVADER 150 100 
+(check-expect (render-game G1) (place-image TANK 150 (- 500 TANK-HEIGHT/2) BACKGROUND))
+(check-expect (render-game G2) (place-image TANK 50 (- 500 TANK-HEIGHT/2)
+                                            (place-image INVADER 150 100
                                                          (place-image MISSILE 150 300 BACKGROUND))))
 
 ; (define (render-game g) BACKGROUND) ;stub
@@ -613,7 +634,7 @@
 ;; Tank Image -> Image
 ;; place the Tank image on top of the given Image
 
-;; < check expect >
+(check-expect (render-tank T0 BACKGROUND) (place-image TANK 150 (- HEIGHT TANK-HEIGHT/2) BACKGROUND))
 
 ; (define (render-tank t img) BACKGROUND) ;stub
 
@@ -625,13 +646,11 @@
 ;; ListOfInvader Image -> Image
 ;; place the Image of Invaders in the ListOfInvader on top of the given image
 
-;; <check expect>
+(check-expect (render-invaders LOI2 BACKGROUND)
+              (place-image INVADER 299 150
+                           (place-image INVADER 150 100 BACKGROUND)))
 
 ; (define (render-invaders loi img) BACKGROUND) ;
-
-(check-expect (render-invaders empty BACKGROUND) BACKGROUND)
-(check-expect (render-invaders (cons (make-invader 150 100 1) empty) BACKGROUND) (place-image INVADER 150 100 BACKGROUND))
-
 
 (define (render-invaders loi img)
   (cond [(empty? loi) img]
@@ -644,7 +663,7 @@
 ;; place Image of Missile in the ListOfMissile on top of the BACKGROUND
 
 (check-expect (render-missiles LOM0) BACKGROUND)
-(check-expect (render-missiles LOM1) (place-image MISSILE 150 100 BACKGROUND))
+(check-expect (render-missiles LOM1) (place-image MISSILE 150 300 BACKGROUND))
 
 (define (render-missiles lom)
   (cond [(empty? lom) BACKGROUND]
