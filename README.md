@@ -3,7 +3,7 @@ It's the final project of How to Code: Simple Data.
 
 ---
 
-# Running Instruction
+## Running Instruction
 
 1. Download & install [DrRacket](http://racket-lang.org/download/)
 2. Open the main source file with DrRacket.
@@ -11,7 +11,7 @@ It's the final project of How to Code: Simple Data.
 
 ---
 
-# Control Instruction
+## Control Instruction
 
 1. Pressing left arrow key will move the tank left.
 2. Pressing right arrow key will move the tank right.
