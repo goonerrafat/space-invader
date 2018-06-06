@@ -17,3 +17,9 @@ It's the final project of How to Code: Simple Data.
 2. Pressing right arrow key will move the tank right.
 3. pressing space will fire up the missile.
 4. if any invader reaches bottom of the screen, the game is over.
+
+
+## Todo
+
+1. Add scoring system.
+2. Make a dynamic background.
