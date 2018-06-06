@@ -13,6 +13,8 @@ It's the final project of How to Code: Simple Data.
 
 ## Control Instruction
 
+![Image from edx](https://prod-edxapp.edx-cdn.org/assets/courseware/v1/8132e5ab4dd1ca92bf276bb6e2d7edb5/asset-v1:UBCx+HtC1x+2T2017+type@asset+block/Space_Invaders_Example.png)
+
 1. Pressing left arrow key will move the tank left.
 2. Pressing right arrow key will move the tank right.
 3. pressing space will fire up the missile.
